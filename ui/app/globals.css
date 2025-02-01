@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.score-renderer .note-pitch {
+  font-weight: 500;
+}
+
+.score-renderer .note-duration {
+  font-size: 0.8em;
+  color: #666;
+}
+
+.score-content {
+  line-height: 2;
+  letter-spacing: 0.05em;
+}
