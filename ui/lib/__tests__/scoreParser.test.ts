@@ -10,21 +10,21 @@ describe('ScoreParser', () => {
         pitch: {
           step: 'C',
           octaveShift: 0,
-          accidental: null
+          accidental: null,
         },
         duration: {
           base: 1.0,
           divisions: 1,
           dots: 0,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       });
     });
 
     it('应该正确解析数字简谱', () => {
       const note = ScoreParser.parseNote('1');
       expect(note.pitch?.step).toBe('C');
-      
+
       const note2 = ScoreParser.parseNote('2');
       expect(note2.pitch?.step).toBe('D');
     });
@@ -128,55 +128,54 @@ describe('ScoreParser', () => {
       expect(score.length).toBeGreaterThan(0);
       expect(score[0].pitch?.step).toBe('C');
       expect(score[1].pitch?.step).toBe('D');
-      expect(score.every(note => 
-        note.type === 'note' && 
-        note.pitch?.step.match(/[A-G]/)
-      )).toBe(true);
+      expect(score.every(note => note.type === 'note' && note.pitch?.step.match(/[A-G]/))).toBe(
+        true
+      );
     });
 
     it('应该正确解析单个延长音', () => {
       const input = '1 -';
       const notes = ScoreParser.parseScore(input);
-      
+
       expect(notes).toHaveLength(1);
       expect(notes[0]).toMatchObject({
         type: 'note',
         pitch: { step: 'C' },
-        duration: { base: 2, divisions: 1 }
+        duration: { base: 2, divisions: 1 },
       });
     });
 
     it('应该正确解析多个连续延长音', () => {
       const input = '1 - - -';
       const notes = ScoreParser.parseScore(input);
-      
+
       expect(notes).toHaveLength(1);
       expect(notes[0]).toMatchObject({
         type: 'note',
         pitch: { step: 'C' },
-        duration: { base: 4, divisions: 1 }
+        duration: { base: 4, divisions: 1 },
       });
     });
 
     it('应该正确解析多个音符中的延长音', () => {
       const input = '1 - 2 - 3';
       const notes = ScoreParser.parseScore(input);
-      
+
       expect(notes).toHaveLength(3);
       expect(notes[0]).toMatchObject({
         type: 'note',
         pitch: { step: 'C' },
-        duration: { base: 2, divisions: 1 }
+        duration: { base: 2, divisions: 1 },
       });
       expect(notes[1]).toMatchObject({
         type: 'note',
         pitch: { step: 'D' },
-        duration: { base: 2, divisions: 1 }
+        duration: { base: 2, divisions: 1 },
       });
       expect(notes[2]).toMatchObject({
         type: 'note',
         pitch: { step: 'E' },
-        duration: { base: 1, divisions: 1 }
+        duration: { base: 1, divisions: 1 },
       });
     });
 
@@ -196,14 +195,14 @@ describe('ScoreParser', () => {
         pitch: {
           step: 'C',
           octaveShift: 0,
-          accidental: null
+          accidental: null,
         },
         duration: {
           base: 1.0,
           divisions: 1,
           dots: 0,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       };
       expect(ScoreParser.stringifyNote(note)).toBe('1');
     });
@@ -214,14 +213,14 @@ describe('ScoreParser', () => {
         pitch: {
           step: 'F',
           octaveShift: 0,
-          accidental: 'sharp'
+          accidental: 'sharp',
         },
         duration: {
           base: 1.0,
           divisions: 1,
           dots: 0,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       };
       expect(ScoreParser.stringifyNote(sharpNote)).toBe('^4');
 
@@ -230,14 +229,14 @@ describe('ScoreParser', () => {
         pitch: {
           step: 'B',
           octaveShift: 0,
-          accidental: 'flat'
+          accidental: 'flat',
         },
         duration: {
           base: 1.0,
           divisions: 1,
           dots: 0,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       };
       expect(ScoreParser.stringifyNote(flatNote)).toBe('_7');
     });
@@ -248,14 +247,14 @@ describe('ScoreParser', () => {
         pitch: {
           step: 'C',
           octaveShift: 1,
-          accidental: null
+          accidental: null,
         },
         duration: {
           base: 1.0,
           divisions: 1,
           dots: 0,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       };
       expect(ScoreParser.stringifyNote(highOctave)).toBe("1'");
 
@@ -264,14 +263,14 @@ describe('ScoreParser', () => {
         pitch: {
           step: 'C',
           octaveShift: -1,
-          accidental: null
+          accidental: null,
         },
         duration: {
           base: 1.0,
           divisions: 1,
           dots: 0,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       };
       expect(ScoreParser.stringifyNote(lowOctave)).toBe('1,');
     });
@@ -282,14 +281,14 @@ describe('ScoreParser', () => {
         pitch: {
           step: 'C',
           octaveShift: 0,
-          accidental: null
+          accidental: null,
         },
         duration: {
           base: 1.0,
           divisions: 2,
           dots: 0,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       };
       expect(ScoreParser.stringifyNote(halfNote)).toBe('1/');
 
@@ -298,14 +297,14 @@ describe('ScoreParser', () => {
         pitch: {
           step: 'C',
           octaveShift: 0,
-          accidental: null
+          accidental: null,
         },
         duration: {
           base: 2.0,
           divisions: 1,
           dots: 0,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       };
       expect(ScoreParser.stringifyNote(doubleNote)).toBe('1');
     });
@@ -317,8 +316,8 @@ describe('ScoreParser', () => {
           base: 1.0,
           divisions: 1,
           dots: 0,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       };
       expect(ScoreParser.stringifyNote(rest)).toBe('z');
     });
@@ -329,14 +328,14 @@ describe('ScoreParser', () => {
         pitch: {
           step: 'C',
           octaveShift: 0,
-          accidental: null
+          accidental: null,
         },
         duration: {
           base: 1.0,
           divisions: 1,
           dots: 1,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       };
       expect(ScoreParser.stringifyNote(dottedNote)).toBe('1.');
 
@@ -345,14 +344,14 @@ describe('ScoreParser', () => {
         pitch: {
           step: 'C',
           octaveShift: 0,
-          accidental: null
+          accidental: null,
         },
         duration: {
           base: 1.0,
           divisions: 1,
           dots: 2,
-          augmentation: 0
-        }
+          augmentation: 0,
+        },
       };
       expect(ScoreParser.stringifyNote(doubleDottedNote)).toBe('1..');
     });
@@ -364,18 +363,18 @@ describe('ScoreParser', () => {
         {
           type: 'note' as const,
           pitch: { step: 'C', octaveShift: 0, accidental: null },
-          duration: { base: 1.0, divisions: 1, dots: 0, augmentation: 0 }
+          duration: { base: 1.0, divisions: 1, dots: 0, augmentation: 0 },
         },
         {
           type: 'note' as const,
           pitch: { step: 'D', octaveShift: 0, accidental: null },
-          duration: { base: 1.0, divisions: 1, dots: 0, augmentation: 0 }
+          duration: { base: 1.0, divisions: 1, dots: 0, augmentation: 0 },
         },
         {
           type: 'note' as const,
           pitch: { step: 'E', octaveShift: 0, accidental: null },
-          duration: { base: 1.0, divisions: 1, dots: 0, augmentation: 0 }
-        }
+          duration: { base: 1.0, divisions: 1, dots: 0, augmentation: 0 },
+        },
       ];
       expect(ScoreParser.stringifyScore(score)).toBe('1 2 3');
     });
@@ -385,42 +384,46 @@ describe('ScoreParser', () => {
         {
           type: 'note' as const,
           pitch: { step: 'C', octaveShift: 0, accidental: null },
-          duration: { base: 1.0, divisions: 1, dots: 0, augmentation: 0 }
+          duration: { base: 1.0, divisions: 1, dots: 0, augmentation: 0 },
         },
         {
           type: 'rest' as const,
-          duration: { base: 1.0, divisions: 1, dots: 0, augmentation: 0 }
-        }
+          duration: { base: 1.0, divisions: 1, dots: 0, augmentation: 0 },
+        },
       ];
       expect(ScoreParser.stringifyScore(score)).toBe('1 z');
     });
 
     it('应该正确转换带延长音的音符', () => {
-      const notes: Note[] = [{
-        type: 'note',
-        pitch: { 
-          step: 'C',
-          octaveShift: 0,
-          accidental: null
+      const notes: Note[] = [
+        {
+          type: 'note',
+          pitch: {
+            step: 'C',
+            octaveShift: 0,
+            accidental: null,
+          },
+          duration: { base: 2, divisions: 1, dots: 0, augmentation: 0 },
         },
-        duration: { base: 2, divisions: 1, dots: 0, augmentation: 0 }
-      }];
-      
+      ];
+
       const result = ScoreParser.stringifyScore(notes);
       expect(result).toBe('1 -');
     });
 
     it('应该正确转换带多个延长音的音符', () => {
-      const notes: Note[] = [{
-        type: 'note',
-        pitch: { 
-          step: 'C',
-          octaveShift: 0,
-          accidental: null
+      const notes: Note[] = [
+        {
+          type: 'note',
+          pitch: {
+            step: 'C',
+            octaveShift: 0,
+            accidental: null,
+          },
+          duration: { base: 3, divisions: 1, dots: 0, augmentation: 0 },
         },
-        duration: { base: 3, divisions: 1, dots: 0, augmentation: 0 }
-      }];
-      
+      ];
+
       const result = ScoreParser.stringifyScore(notes);
       expect(result).toBe('1 - -');
     });
@@ -429,24 +432,24 @@ describe('ScoreParser', () => {
       const notes: Note[] = [
         {
           type: 'note',
-          pitch: { 
+          pitch: {
             step: 'C',
             octaveShift: 0,
-            accidental: null
+            accidental: null,
           },
-          duration: { base: 2, divisions: 1, dots: 0, augmentation: 0 }
+          duration: { base: 2, divisions: 1, dots: 0, augmentation: 0 },
         },
         {
           type: 'note',
-          pitch: { 
+          pitch: {
             step: 'D',
             octaveShift: 0,
-            accidental: null
+            accidental: null,
           },
-          duration: { base: 2, divisions: 1, dots: 0, augmentation: 0 }
-        }
+          duration: { base: 2, divisions: 1, dots: 0, augmentation: 0 },
+        },
       ];
-      
+
       const result = ScoreParser.stringifyScore(notes);
       expect(result).toBe('1 - 2 -');
     });
@@ -456,13 +459,13 @@ describe('ScoreParser', () => {
         {
           type: 'note' as const,
           pitch: { step: 'C', octaveShift: 0, accidental: null },
-          duration: { base: 1.0, divisions: 1, dots: 1, augmentation: 0 }
+          duration: { base: 1.0, divisions: 1, dots: 1, augmentation: 0 },
         },
         {
           type: 'note' as const,
           pitch: { step: 'D', octaveShift: 0, accidental: null },
-          duration: { base: 1.0, divisions: 1, dots: 2, augmentation: 0 }
-        }
+          duration: { base: 1.0, divisions: 1, dots: 2, augmentation: 0 },
+        },
       ];
       expect(ScoreParser.stringifyScore(score)).toBe('1. 2..');
     });
@@ -477,7 +480,7 @@ K: C
 1 2 3 1 1 2 3 1 3 4 5 3 4 5`;
 
       const score = ScoreParser.parseFullScore(scoreStr);
-      
+
       // 验证头部信息
       expect(score.header.titles).toEqual(['《两只老虎》']);
       expect(score.header.composers).toEqual(['马小虎']);
@@ -500,7 +503,7 @@ K: G
 1 2 3`;
 
       const score = ScoreParser.parseFullScore(scoreStr);
-      
+
       expect(score.header.titles).toEqual(['主标题', '副标题']);
       expect(score.header.composers).toEqual(['作者1', '作者2']);
     });
@@ -522,7 +525,7 @@ K: C
     it('应该使用默认值处理缺失的头部信息', () => {
       const scoreStr = `1 2 3 4`;
       const score = ScoreParser.parseFullScore(scoreStr);
-      
+
       expect(score.header.titles).toEqual([]);
       expect(score.header.composers).toEqual([]);
       expect(score.header.meter).toBe('4/4');
@@ -551,19 +554,16 @@ M: 3/4
           composers: ['马小虎'],
           meter: '2/4',
           key: 'C',
-          lyrics: []
+          bpm: 120,
         },
-        notes: [
-          ScoreParser.parseNote('1'),
-          ScoreParser.parseNote('2'),
-          ScoreParser.parseNote('3')
-        ]
+        notes: [ScoreParser.parseNote('1'), ScoreParser.parseNote('2'), ScoreParser.parseNote('3')],
       };
 
       const expectedStr = `T: 《两只老虎》
 C: 马小虎
 M: 2/4
 K: C
+Q: 120
 
 1 2 3`;
 
@@ -577,9 +577,8 @@ K: C
           composers: ['作者1', '作者2'],
           meter: '4/4',
           key: 'G',
-          lyrics: []
         },
-        notes: [ScoreParser.parseNote('1')]
+        notes: [ScoreParser.parseNote('1')],
       };
 
       const result = ScoreParser.stringifyFullScore(score);
@@ -594,11 +593,11 @@ K: C
     test('应该正确解析包含小节线的简谱', () => {
       const input = '1 2 3 4 | 5 6 7 1';
       const notes = ScoreParser.parseScore(input);
-      
+
       expect(notes).toHaveLength(9); // 8个音符 + 1个小节线
       expect(notes[4]).toEqual({
         type: 'barline',
-        duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 }
+        duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 },
       });
     });
 
@@ -607,17 +606,17 @@ K: C
         {
           type: 'note' as const,
           pitch: { step: 'C', octaveShift: 0, accidental: null },
-          duration: { base: 1, divisions: 1, dots: 0, augmentation: 0 }
+          duration: { base: 1, divisions: 1, dots: 0, augmentation: 0 },
         },
         {
           type: 'barline' as const,
-          duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 }
+          duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 },
         },
         {
           type: 'note' as const,
           pitch: { step: 'D', octaveShift: 0, accidental: null },
-          duration: { base: 1, divisions: 1, dots: 0, augmentation: 0 }
-        }
+          duration: { base: 1, divisions: 1, dots: 0, augmentation: 0 },
+        },
       ];
 
       const result = ScoreParser.stringifyScore(notes);
@@ -627,15 +626,15 @@ K: C
     test('应该正确处理多个连续的小节线', () => {
       const input = '1 2 | | 3 4';
       const notes = ScoreParser.parseScore(input);
-      
+
       expect(notes).toHaveLength(6); // 4个音符 + 2个小节线
       expect(notes[2]).toEqual({
         type: 'barline',
-        duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 }
+        duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 },
       });
       expect(notes[3]).toEqual({
         type: 'barline',
-        duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 }
+        duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 },
       });
     });
 
@@ -649,7 +648,7 @@ K: C
       expect(score.notes).toHaveLength(9); // 8个音符 + 1个小节线
       expect(score.notes[4]).toEqual({
         type: 'barline',
-        duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 }
+        duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 },
       });
 
       // 测试序列化
@@ -657,4 +656,82 @@ K: C
       expect(output).toContain('1 2 3 4 | 5 6 7 1');
     });
   });
-}); 
+
+  describe(' 速度解析测试 ', () => {
+    test(' 应该正确解析基本速度标记 ', () => {
+      const scoreStr = `T: 测试曲目
+Q: 120
+K: C
+1 2 3 4`;
+
+      const score = ScoreParser.parseFullScore(scoreStr);
+      expect(score.header.bpm).toBe(120);
+    });
+
+    test(' 应该正确解析带音符时值的速度标记 ', () => {
+      const scoreStr = `T: 测试曲目
+Q: 1/4=120
+K: C
+1 2 3 4`;
+
+      const score = ScoreParser.parseFullScore(scoreStr);
+      expect(score.header.bpm).toBe(120);
+    });
+
+    test(' 应该使用默认速度值 ', () => {
+      const scoreStr = `T: 测试曲目
+K: C
+1 2 3 4`;
+
+      const score = ScoreParser.parseFullScore(scoreStr);
+      expect(score.header.bpm).toBe(120); // 默认值应为 120
+    });
+
+    test(' 应该正确序列化速度标记 ', () => {
+      const score = {
+        header: {
+          titles: [' 测试曲目 '],
+          composers: [],
+          meter: '4/4',
+          key: 'C',
+          bpm: 96,
+        },
+        notes: [ScoreParser.parseNote('1'), ScoreParser.parseNote('2')],
+      };
+
+      const result = ScoreParser.stringifyFullScore(score);
+      expect(result).toContain('Q: 96');
+    });
+
+    test(' 应该处理无效的速度标记 ', () => {
+      const scoreStr = `T: 测试曲目
+Q: invalid
+K: C
+1 2 3 4`;
+
+      const score = ScoreParser.parseFullScore(scoreStr);
+      expect(score.header.bpm).toBe(120); // 无效值应返回默认值
+    });
+
+    test(' 应该正确解析不同格式的速度标记 ', () => {
+      const testCases = [
+        { input: 'Q: 60', expected: 60 },
+        { input: 'Q: 1/4=80', expected: 80 },
+        { input: 'Q: 1/8=90', expected: 90 },
+        { input: 'Q: 2/4=100', expected: 100 },
+        { input: 'Q: invalid', expected: 120 },
+        { input: 'Q: ', expected: 120 },
+      ];
+
+      testCases.forEach(({ input, expected }) => {
+        const scoreStr = `T: 测试曲目
+${input}
+K: C
+1 2 3 4`;
+
+        const score = ScoreParser.parseFullScore(scoreStr);
+        expect(score.header.bpm).toBe(expected);
+      });
+    });
+  });
+});

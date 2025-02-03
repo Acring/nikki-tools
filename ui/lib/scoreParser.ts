@@ -4,14 +4,17 @@ import { Score, Note, Pitch, Duration, ScoreHeader } from '../type/score';
  * 简谱解析器 - 将简谱字符串转换为对象
  */
 
-
-
 export class ScoreParser {
   private static readonly NOTE_PATTERN = /([_^=]*)([A-Ga-gz1-7])([,']*)(\/+|\d+|[<>])?(\.*)?/;
-  private static readonly HEADER_PATTERN = /^([TCMK]):\s*(.+)$/;
+  private static readonly HEADER_PATTERN = /^([TCMKQ]):\s*(.+)$/;
   private static readonly PITCH_MAP: { [key: string]: string } = {
-    '1': 'C', '2': 'D', '3': 'E', '4': 'F',
-    '5': 'G', '6': 'A', '7': 'B'
+    '1': 'C',
+    '2': 'D',
+    '3': 'E',
+    '4': 'F',
+    '5': 'G',
+    '6': 'A',
+    '7': 'B',
   };
 
   /**
@@ -22,8 +25,9 @@ export class ScoreParser {
     const header: ScoreHeader = {
       titles: [],
       composers: [],
-      meter: '4/4',  // 默认4/4拍
-      key: 'C',       // 默认C调
+      meter: '4/4', // 默认4/4拍
+      key: 'C', // 默认C调
+      bpm: 120, // 默认速度
     };
 
     for (const line of lines) {
@@ -33,9 +37,11 @@ export class ScoreParser {
       const [_, type, value] = match;
       switch (type) {
         case 'T':
+          header.titles = header.titles || [];
           header.titles.push(value.trim());
           break;
         case 'C':
+          header.composers = header.composers || [];
           header.composers.push(value.trim());
           break;
         case 'M':
@@ -43,6 +49,9 @@ export class ScoreParser {
           break;
         case 'K':
           header.key = value.trim();
+          break;
+        case 'Q':
+          header.bpm = this.parseTempo(value.trim());
           break;
       }
     }
@@ -61,6 +70,19 @@ export class ScoreParser {
   }
 
   /**
+   * 解析速度标记
+   * @param tempoStr 速度字符串
+   */
+  private static parseTempo(tempoStr: string): number {
+    // 修改：简化速度解析逻辑
+    const bpmMatch = tempoStr.match(/(\d+)/);
+    if (bpmMatch) {
+      return parseInt(bpmMatch[1], 10);
+    }
+    return 120; // 默认速度
+  }
+
+  /**
    * 解析简谱字符串
    * @param scoreStr 简谱字符串
    */
@@ -71,12 +93,12 @@ export class ScoreParser {
     for (let i = 0; i < noteStrings.length; i++) {
       const noteStr = noteStrings[i];
       if (!noteStr.trim()) continue;
-      
+
       // 处理小节线
       if (noteStr === '|') {
         notes.push({
           type: 'barline',
-          duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 }
+          duration: { base: 0, divisions: 1, dots: 0, augmentation: 0 },
         });
         continue;
       }
@@ -90,7 +112,7 @@ export class ScoreParser {
             prevNote.duration.base += 1;
           }
         }
-        continue;  // 添加 continue 以跳过后续处理
+        continue; // 添加 continue 以跳过后续处理
       }
 
       // 处理装饰音
@@ -119,14 +141,13 @@ export class ScoreParser {
    */
   static parseFullScore(scoreStr: string): Score {
     const lines = scoreStr.split('\n').map(line => line.trim());
-    
-    // 收集所有头部信息行（不包括歌词行）
-    const headerLines = lines.filter(line => line.match(/^[TCMK]:/));
-    
-    // 找到最后一个头部信息行的索引
-    const lastHeaderIndex = lines.reduce((lastIndex, line, index) => {
-      return line.match(/^[TCMK]:/) ? index : lastIndex;
-    }, -1);
+
+    // 修改：直接收集所有非空行作为头部信息行
+    const headerLines = lines.filter(line => line.trim() && !line.match(/^[1-7]|z/));
+
+    // 修改：找到第一个音符行的索引
+    const firstNoteIndex = lines.findIndex(line => line.match(/^[1-7]|z/));
+    const lastHeaderIndex = firstNoteIndex === -1 ? lines.length - 1 : firstNoteIndex - 1;
 
     // 解析音符内容
     const notesStr = lines
@@ -136,7 +157,7 @@ export class ScoreParser {
 
     return {
       header: this.parseHeader(headerLines),
-      notes: this.parseScore(notesStr)
+      notes: this.parseScore(notesStr),
     };
   }
 
@@ -146,14 +167,14 @@ export class ScoreParser {
    */
   static stringifyFullScore(score: Score): string {
     const headerLines: string[] = [];
-    
+
     // 添加标题
-    score.header.titles.forEach(title => {
+    score.header.titles?.forEach(title => {
       headerLines.push(`T: ${title}`);
     });
 
     // 添加作者
-    score.header.composers.forEach(composer => {
+    score.header.composers?.forEach(composer => {
       headerLines.push(`C: ${composer}`);
     });
 
@@ -162,6 +183,11 @@ export class ScoreParser {
 
     // 添加调号
     headerLines.push(`K: ${score.header.key}`);
+
+    // 添加速度标记
+    if (score.header.bpm) {
+      headerLines.push(`Q: ${score.header.bpm}`);
+    }
 
     // 添加音符
     const notesStr = this.stringifyScore(score.notes);
@@ -178,7 +204,7 @@ export class ScoreParser {
     if (noteStr.toLowerCase() === 'z') {
       return {
         type: 'rest',
-        duration: this.parseDuration(undefined, undefined)
+        duration: this.parseDuration(undefined, undefined),
       };
     }
 
@@ -191,25 +217,28 @@ export class ScoreParser {
     const pitch: Pitch = {
       step: this.PITCH_MAP[noteName] || noteName.toUpperCase(),
       octaveShift: this.calculateOctaveShift(noteName, octaveMarks),
-      accidental: this.parseAccidental(accidentals)
+      accidental: this.parseAccidental(accidentals),
     };
 
     return {
       type: 'note',
       pitch,
-      duration: this.parseDuration(durationMark, dots)
+      duration: this.parseDuration(durationMark, dots),
     };
   }
 
   /**
    * 解析时值标记
    */
-  private static parseDuration(durationMark: string | undefined, dots: string | undefined): Duration {
+  private static parseDuration(
+    durationMark: string | undefined,
+    dots: string | undefined
+  ): Duration {
     const duration: Duration = {
       base: 1.0,
       divisions: 1,
       dots: (dots || '').length,
-      augmentation: 0
+      augmentation: 0,
     };
 
     if (!durationMark) return duration;
@@ -238,7 +267,7 @@ export class ScoreParser {
       // 小写字母表示高八度
       return noteName === noteName.toLowerCase() && !this.PITCH_MAP[noteName] ? 1 : 0;
     }
-    
+
     // 处理 , 和 ' 符号
     if (octaveMarks.includes(',')) {
       return -octaveMarks.length;
@@ -258,9 +287,9 @@ export class ScoreParser {
     const accidentalMap: { [key: string]: string } = {
       '^': 'sharp',
       '^^': 'double-sharp',
-      '_': 'flat',
-      '__': 'double-flat',
-      '=': 'natural'
+      _: 'flat',
+      __: 'double-flat',
+      '=': 'natural',
     };
 
     return accidentalMap[accidentals] || null;
@@ -288,21 +317,21 @@ export class ScoreParser {
     if (note.type === 'rest') {
       return 'z';
     }
-    
+
     if (note.type === 'barline') {
       return '|';
     }
 
     let result = '';
-    
+
     // 添加变音记号
     if (note.pitch?.accidental) {
       const accidentalMap: { [key: string]: string } = {
-        'sharp': '^',
+        sharp: '^',
         'double-sharp': '^^',
-        'flat': '_',
+        flat: '_',
         'double-flat': '__',
-        'natural': '='
+        natural: '=',
       };
       result += accidentalMap[note.pitch.accidental] || '';
     }
@@ -310,7 +339,9 @@ export class ScoreParser {
     // 添加音名
     if (note.pitch) {
       // 尝试使用数字简谱
-      const numeral = Object.entries(this.PITCH_MAP).find(([_, value]) => value === note.pitch?.step)?.[0];
+      const numeral = Object.entries(this.PITCH_MAP).find(
+        ([_, value]) => value === note.pitch?.step
+      )?.[0];
       result += numeral || note.pitch.step;
     }
 
@@ -319,7 +350,7 @@ export class ScoreParser {
       if (note.pitch.octaveShift > 0) {
         result += "'".repeat(note.pitch.octaveShift);
       } else if (note.pitch.octaveShift < 0) {
-        result += ",".repeat(-note.pitch.octaveShift);
+        result += ','.repeat(-note.pitch.octaveShift);
       }
     }
 
@@ -349,17 +380,19 @@ export class ScoreParser {
    */
   static stringifyScore(notes: Note[]): string {
     const result: string[] = [];
-    
+
     for (let i = 0; i < notes.length; i++) {
       const note = notes[i];
-      
+
       if (note.type === 'note' && note.duration) {
         // 输出基本音符
-        result.push(this.stringifyNote({
-          ...note,
-          duration: { ...note.duration, base: 1 }
-        }));
-        
+        result.push(
+          this.stringifyNote({
+            ...note,
+            duration: { ...note.duration, base: 1 },
+          })
+        );
+
         // 根据 base 值添加对应数量的延长线
         if (note.duration.base > 1) {
           for (let j = 1; j < note.duration.base; j++) {
@@ -370,7 +403,7 @@ export class ScoreParser {
         result.push(this.stringifyNote(note));
       }
     }
-    
+
     return result.join(' ');
   }
-} 
+}

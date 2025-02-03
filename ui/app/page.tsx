@@ -75,7 +75,7 @@ const Home: NextPage = () => {
             placeholder="在此输入简谱文本..."
           />
         </div>
-        
+
         {/* 右侧预览区 */}
         <div className="w-1/2">
           <h2 className="text-lg font-semibold mb-2">预览</h2>
