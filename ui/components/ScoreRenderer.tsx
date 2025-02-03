@@ -37,14 +37,7 @@ const ScoreRenderer: React.FC<ScoreRendererProps> = ({ score }) => {
         
         const numberNote = noteToNumber[base as keyof typeof noteToNumber] || base;
         
-        // 处理八度标记
-        const octaveMark = note.pitch?.octaveShift ?? 0 > 0
-          ? "·".repeat(note.pitch?.octaveShift ?? 0)  // 高八度用点在上方
-          : (note.pitch?.octaveShift ?? 0) < 0
-            ? ".".repeat(Math.abs(note.pitch?.octaveShift ?? 0))  // 低八度用点在下方
-            : '';
-
-        return `${accidental}${numberNote}${octaveMark}`;
+        return `${accidental}${numberNote}`;
       };
 
       // 获取时值显示
@@ -52,42 +45,69 @@ const ScoreRenderer: React.FC<ScoreRendererProps> = ({ score }) => {
         const { base, dots, divisions } = note.duration;
         let durationStr = '';
         
-        // 处理附点
-        if (dots > 0) {
-          durationStr += '.'.repeat(dots);
-        }
-
-        // 处理延长音
+        // 只处理延长音，附点将在 DOM 中单独处理
         if (base > 1) {
           durationStr += ' ' + '-'.repeat(base - 1);
         }
 
         return {
           text: durationStr,
-          divisions: divisions > 1 ? divisions - 1 : 0
+          divisions: divisions > 1 ? divisions - 1 : 0,
+          dots: dots // 返回附点数量
         };
       };
 
       return (
         <span className="inline-block mx-1 relative">
-          <span className="note-pitch relative">{getDisplayNote()}
-          {[...Array(getDurationDisplay().divisions)].map((_, index) => (
+          <span className="relative">
+            {getDisplayNote()}
+            {/* 添加高八度圆点标记 */}
+            {(note.pitch?.octaveShift ?? 0) > 0 && [...Array(note.pitch?.octaveShift)].map((_, index) => (
+              <span
+                key={`octave-up-${index}`}
+                className="absolute w-[3px] h-[3px] bg-current rounded-full inline-block left-1/2"
+                style={{
+                  top: `${-8 - index * 6}px`,
+                  transform: 'translateX(-50%)'
+                }}
+              />
+            ))}
+            {/* 添加低八度圆点标记 */}
+            {(note.pitch?.octaveShift ?? 0) < 0 && [...Array(Math.abs(note.pitch?.octaveShift ?? 0))].map((_, index) => (
+              <span
+                key={`octave-down-${index}`}
+                className="absolute w-[3px] h-[3px] bg-current rounded-full inline-block left-1/2"
+                style={{
+                  bottom: `${-8 - index * 6}px`,
+                  transform: 'translateX(-50%)'
+                }}
+              />
+            ))}
+            {/* 添加附点显示 */}
+            {[...Array(getDurationDisplay().dots)].map((_, index) => (
+              <span
+                key={`dot-${index}`}
+                className="absolute top-1/2 text-[0.6em] inline-block w-[0.4em] h-[0.4em] bg-current rounded-full"
+                style={{
+                  transform: 'translateY(-50%)',
+                  right: `${-0.4 - index * 0.4}em`
+                }}
+              />
+            ))}
+            {/* 渲染分部线 */}
+            {[...Array(getDurationDisplay().divisions)].map((_, index) => (
               <span
                 key={`division-${index}`}
-                className="absolute left-0 right-0"
+                className="absolute left-[-10%] w-[120%] bg-neutral-800"
                 style={{
                   height: '1.5px',
-                  background: '#333',
-                  bottom: `${-4 - index * 3}px`,
-                  width: '120%',
-                  left: '-10%',
+                  bottom: `${-4 - index * 3}px`
                 }}
               />
             ))}
           </span>
-          <span className="note-duration relative">
+          <span className="relative">
             {getDurationDisplay().text}
-            
           </span>
         </span>
       );
@@ -98,7 +118,7 @@ const ScoreRenderer: React.FC<ScoreRendererProps> = ({ score }) => {
   return (
     <div className="score-renderer">
       {/* 渲染标题和元数据 */}
-      <div className="score-header mb-4">
+      <div className="mb-4">
         {score.header.titles && score.header.titles.map((title, index) => (
           <h2 key={`title-${index}`} className="text-xl font-bold mb-1">
             {title}
@@ -116,7 +136,7 @@ const ScoreRenderer: React.FC<ScoreRendererProps> = ({ score }) => {
       </div>
 
       {/* 渲染乐谱内容 */}
-      <div className="score-content p-4 border rounded bg-white font-mono text-lg">
+      <div className="p-4 border rounded bg-white font-mono text-lg">
         {score.notes.map((note, index) => (
           <React.Fragment key={index}>
             {renderNote(note)}

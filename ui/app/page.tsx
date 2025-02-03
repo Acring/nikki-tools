@@ -1,6 +1,7 @@
 'use client';
 
 import ScoreRenderer from '../components/ScoreRenderer';
+import ScorePlayer from '../components/ScorePlayer';
 import { useState, useEffect } from 'react';
 import type { NextPage } from 'next';
 import { ScoreParser } from '../lib/scoreParser';
@@ -47,7 +48,10 @@ const Home: NextPage = () => {
       <div className="flex gap-4">
         {/* 左侧编辑区 */}
         <div className="w-1/2">
-          <h2 className="text-lg font-semibold mb-2">输入区</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">输入区</h2>
+            <ScorePlayer score={score} />
+          </div>
           <div className="mb-2 text-sm text-gray-600">
             支持的格式：
             <ul className="list-disc list-inside">
@@ -58,7 +62,7 @@ const Home: NextPage = () => {
               <li>音符：1-7 或 A-G</li>
               <li>升降号：^ (升号)、^^ (重升号)、_ (降号)、__ (重降号)、= (还原号)</li>
               <li>八度：高音加 ' (如 1')、低音加 , (如 1,)，可叠加使用</li>
-              <li>时值：基本音符为一拍，/ 表示减半(如 1/ 为半拍)</li>
+              <li>时值：基本音符为一拍，/ 表示减半(如 1/ 为半拍)， . 表示附点(如 1. 表示一拍半)</li>
               <li>小节线：|</li>
               <li>休止符：z</li>
               <li>延长线：-</li>
